@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/vercel.json",
+  "buildCommand": "ng build --configuration production",
+  "outputDirectory": "dist/resq-auto-web/browser",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

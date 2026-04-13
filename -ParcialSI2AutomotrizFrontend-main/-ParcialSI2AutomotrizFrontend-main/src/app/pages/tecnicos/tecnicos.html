@@ -1,0 +1,103 @@
+<div class="page">
+  @if (rol === 'administrador_taller') {
+    <div class="page-header">
+      <div>
+        <h1>👷 Personal Técnico</h1>
+        <p>Gestiona los técnicos de tu taller</p>
+      </div>
+      <button class="btn-primary" (click)="abrirModal()" id="tecnico-add">+ Agregar técnico</button>
+    </div>
+
+    @if (loading) {
+      <div class="loading"><div class="spinner-lg"></div></div>
+    } @else if (tecnicos.length === 0) {
+      <div class="empty-state">
+        <span class="icon">👷</span>
+        <h3>No hay técnicos registrados</h3>
+        <p>Agrega tu primer técnico al taller</p>
+        <button class="btn-primary" (click)="abrirModal()">+ Agregar técnico</button>
+      </div>
+    } @else {
+      <div class="cards-grid">
+        @for (t of tecnicos; track t.id) {
+          <div class="tecnico-card glass-card">
+            <div class="tecnico-header">
+              <div class="tecnico-avatar">{{ t.nombrecompleto?.charAt(0)?.toUpperCase() }}</div>
+              <div class="tecnico-info">
+                <h4>{{ t.nombrecompleto }}</h4>
+                <span class="tecnico-email">{{ t.correo }}</span>
+              </div>
+            </div>
+            <div class="tecnico-status">
+              <span class="status-label">Disponibilidad</span>
+              <label class="toggle-switch">
+                <input type="checkbox" [checked]="t.estadisponible" (change)="toggleDisponibilidad(t)" />
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="badge" [class.badge-success]="t.estadisponible" [class.badge-error]="!t.estadisponible">
+                {{ t.estadisponible ? 'Disponible' : 'No disponible' }}
+              </span>
+            </div>
+            <div class="tecnico-actions">
+              <button class="btn-danger-sm" (click)="eliminar(t.id)">🗑️ Eliminar</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (rol === 'tecnico') {
+    <div class="page-header">
+      <div>
+        <h1>👷 Mi Disponibilidad</h1>
+        <p>Controla tu estado de disponibilidad</p>
+      </div>
+    </div>
+
+    <div class="my-status glass-card">
+      <div class="status-big">
+        <span class="status-emoji">{{ authService.getUsuario()?.disponible ? '🟢' : '🔴' }}</span>
+        <h2>{{ authService.getUsuario()?.disponible ? 'Estás Disponible' : 'No Disponible' }}</h2>
+        <p>Cambia tu estado para recibir o dejar de recibir emergencias</p>
+      </div>
+      <button class="btn-toggle" [class.active]="authService.getUsuario()?.disponible" (click)="toggleMiDisponibilidad()">
+        {{ authService.getUsuario()?.disponible ? '⏸️ Desactivar' : '▶️ Activar' }}
+      </button>
+    </div>
+  }
+</div>
+
+<!-- Modal Agregar Técnico -->
+@if (showModal) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>👷 Nuevo Técnico</h3>
+        <button class="modal-close" (click)="cerrarModal()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre completo *</label>
+        <input type="text" [(ngModel)]="form.nombre_completo" class="form-input" placeholder="Juan Pérez" id="tecnico-nombre" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico *</label>
+        <input type="email" [(ngModel)]="form.correo" class="form-input" placeholder="tecnico&#64;taller.com" id="tecnico-correo" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña *</label>
+        <input type="password" [(ngModel)]="form.contrasena" class="form-input" placeholder="Mínimo 6 caracteres" id="tecnico-password" />
+      </div>
+
+      @if (mensaje) {
+        <div class="alert" [class.alert-error]="isError">{{ mensaje }}</div>
+      }
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-primary" (click)="guardar()" id="tecnico-save">Agregar técnico</button>
+      </div>
+    </div>
+  </div>
+}

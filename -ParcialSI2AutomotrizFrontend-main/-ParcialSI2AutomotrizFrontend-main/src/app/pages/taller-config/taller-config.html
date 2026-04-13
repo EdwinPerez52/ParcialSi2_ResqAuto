@@ -1,0 +1,48 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>🔧 Especialidades del Taller</h1>
+      <p>Selecciona los servicios que ofrece tu taller</p>
+    </div>
+    <button class="btn-primary" (click)="guardar()" [disabled]="saving" id="esp-save">
+      @if (saving) {
+        <span class="spinner"></span> Guardando...
+      } @else {
+        💾 Guardar cambios
+      }
+    </button>
+  </div>
+
+  @if (mensaje) {
+    <div class="alert" [class.alert-error]="isError" [class.alert-success]="!isError">
+      {{ mensaje }}
+    </div>
+  }
+
+  @if (loading) {
+    <div class="loading"><div class="spinner-lg"></div></div>
+  } @else if (todasEspecialidades.length === 0) {
+    <div class="empty-state">
+      <span class="icon">🔧</span>
+      <h3>No hay especialidades disponibles</h3>
+      <p>Contacta al administrador para agregar especialidades al catálogo</p>
+    </div>
+  } @else {
+    <div class="chips-container glass-card">
+      <h3>Selecciona tus especialidades</h3>
+      <p class="chips-subtitle">{{ seleccionadas.size }} de {{ todasEspecialidades.length }} seleccionadas</p>
+      <div class="chips-grid">
+        @for (esp of todasEspecialidades; track esp.id) {
+          <button
+            class="chip"
+            [class.selected]="isSelected(esp.id)"
+            (click)="toggleEspecialidad(esp.id)"
+          >
+            @if (isSelected(esp.id)) { ✅ } @else { ⬜ }
+            {{ esp.nombreservicio }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

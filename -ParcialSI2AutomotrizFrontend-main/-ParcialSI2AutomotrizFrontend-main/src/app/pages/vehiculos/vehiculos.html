@@ -1,0 +1,99 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>🚙 Mis Vehículos</h1>
+      <p>Gestiona tus vehículos registrados</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModal()" id="vehiculo-add">+ Agregar vehículo</button>
+  </div>
+
+  @if (loading) {
+    <div class="loading"><div class="spinner-lg"></div></div>
+  } @else if (vehiculos.length === 0) {
+    <div class="empty-state">
+      <span class="icon">🚗</span>
+      <h3>No tienes vehículos registrados</h3>
+      <p>Agrega tu primer vehículo para empezar</p>
+      <button class="btn-primary" (click)="abrirModal()">+ Agregar vehículo</button>
+    </div>
+  } @else {
+    <div class="table-container glass-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Placa</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Año</th>
+            <th>Color</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of vehiculos; track v.placa) {
+            <tr>
+              <td><span class="placa-badge">{{ v.placa }}</span></td>
+              <td>{{ v.marca }}</td>
+              <td>{{ v.modelo }}</td>
+              <td>{{ v.anio }}</td>
+              <td>
+                <span class="color-dot" [style.background]="v.color"></span>
+                {{ v.color }}
+              </td>
+              <td class="actions">
+                <button class="btn-icon edit" (click)="abrirModal(v)" title="Editar">✏️</button>
+                <button class="btn-icon delete" (click)="eliminar(v.placa)" title="Eliminar">🗑️</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Modal -->
+@if (showModal) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editMode ? '✏️ Editar Vehículo' : '🚗 Nuevo Vehículo' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Placa *</label>
+        <input type="text" [(ngModel)]="form.placa" class="form-input" placeholder="ABC-1234" [disabled]="editMode" id="vehiculo-placa" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Marca *</label>
+          <input type="text" [(ngModel)]="form.marca" class="form-input" placeholder="Toyota" id="vehiculo-marca" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modelo *</label>
+          <input type="text" [(ngModel)]="form.modelo" class="form-input" placeholder="Corolla" id="vehiculo-modelo" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Año</label>
+          <input type="number" [(ngModel)]="form.anio" class="form-input" id="vehiculo-anio" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <input type="text" [(ngModel)]="form.color" class="form-input" placeholder="Rojo" id="vehiculo-color" />
+        </div>
+      </div>
+
+      @if (mensaje) {
+        <div class="alert" [class.alert-error]="isError">{{ mensaje }}</div>
+      }
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-primary" (click)="guardar()" id="vehiculo-save">{{ editMode ? 'Actualizar' : 'Registrar' }}</button>
+      </div>
+    </div>
+  </div>
+}
