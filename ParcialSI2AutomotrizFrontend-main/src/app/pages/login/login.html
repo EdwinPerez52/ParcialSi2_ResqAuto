@@ -1,0 +1,81 @@
+<div class="auth-container">
+  <div class="auth-bg">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="brand">
+        <span class="brand-icon">🚗</span>
+        <h1 class="brand-name">ResQ<span class="accent">Auto</span></h1>
+      </div>
+      <p class="brand-subtitle">Plataforma de Emergencias Vehiculares</p>
+    </div>
+
+    <form (ngSubmit)="iniciarSesion()" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Correo Electrónico</label>
+        <div class="input-wrapper">
+          <span class="input-icon">📧</span>
+          <input
+            type="email"
+            [(ngModel)]="correo"
+            name="correo"
+            class="form-input"
+            placeholder="ejemplo&#64;correo.com"
+            required
+            id="login-email"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="contrasena"
+            name="contrasena"
+            class="form-input"
+            placeholder="Tu contraseña"
+            required
+            id="login-password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="showPassword = !showPassword"
+          >
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      @if (mensaje) {
+        <div class="alert" [class.alert-error]="isError" [class.alert-success]="!isError">
+          {{ mensaje }}
+        </div>
+      }
+
+      <button type="submit" class="btn-submit" [disabled]="loading" id="login-submit">
+        @if (loading) {
+          <span class="spinner"></span> Ingresando...
+        } @else {
+          Ingresar
+        }
+      </button>
+    </form>
+
+    <div class="auth-links">
+      <a routerLink="/recuperar-password" class="auth-link">¿Olvidaste tu contraseña?</a>
+      <div class="auth-divider">
+        <span>¿No tienes cuenta?</span>
+        <a routerLink="/registro" class="auth-link highlight">Regístrate aquí</a>
+      </div>
+    </div>
+  </div>
+</div>

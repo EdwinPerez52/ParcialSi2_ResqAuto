@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm install -g @angular/cli && ng build --configuration production",
+  "outputDirectory": "dist/resq-auto-web/browser",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

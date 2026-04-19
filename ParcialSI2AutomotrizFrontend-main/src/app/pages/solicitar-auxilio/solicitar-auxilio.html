@@ -1,0 +1,75 @@
+<div class="auxilio-container">
+  <div class="header">
+    <h1>🚨 Solicitar Auxilio</h1>
+    <p class="subtitle">Envía tu ubicación para recibir asistencia inmediata</p>
+  </div>
+
+  <!-- Mapa -->
+  <div class="map-wrapper">
+    <div id="map"></div>
+    <div class="ubicacion-badge" *ngIf="ubicacionObtenida">
+      <span class="dot"></span> Ubicación capturada
+      <small>({{form.latitud | number:'1.4-4'}}, {{form.longitud | number:'1.4-4'}})</small>
+    </div>
+    <div class="ubicacion-badge loading" *ngIf="!ubicacionObtenida">
+      <span class="spinner-sm"></span> Obteniendo ubicación GPS...
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="form-card" *ngIf="!resultado">
+    <div class="form-group">
+      <label>🚗 Vehículo</label>
+      <select [(ngModel)]="form.vehiculo_placa" class="input">
+        <option value="" disabled>Selecciona tu vehículo</option>
+        <option *ngFor="let v of vehiculos" [value]="v.placa">
+          {{v.marca}} {{v.modelo}} ({{v.placa}}) - {{v.color}}
+        </option>
+      </select>
+      <div *ngIf="vehiculos.length === 0 && !loading" class="empty-msg">
+        No tienes vehículos registrados. <a routerLink="/vehiculos">Registra uno aquí</a>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>📝 Describe tu problema</label>
+      <textarea [(ngModel)]="form.descripcion" class="input textarea"
+                placeholder="Ej: El motor no enciende, sale humo del capó, llanta ponchada..."
+                rows="4"></textarea>
+    </div>
+
+    <div class="alert" *ngIf="mensaje" [class.error]="isError" [class.success]="!isError">
+      {{mensaje}}
+    </div>
+
+    <button class="btn-auxilio" (click)="solicitar()"
+            [disabled]="enviando || !ubicacionObtenida || vehiculos.length === 0">
+      <span *ngIf="!enviando">🚨 SOLICITAR AUXILIO AHORA</span>
+      <span *ngIf="enviando" class="spinner-btn">Enviando...</span>
+    </button>
+  </div>
+
+  <!-- Resultado -->
+  <div class="resultado-card" *ngIf="resultado">
+    <div class="resultado-icon">✅</div>
+    <h2>¡Auxilio solicitado!</h2>
+    <p class="resultado-id">Emergencia #{{resultado.incidente_id}}</p>
+
+    <div class="resultado-info">
+      <div class="info-row">
+        <span class="label">Estado:</span>
+        <span class="badge" [class]="'badge-' + resultado.estado.toLowerCase()">{{resultado.estado}}</span>
+      </div>
+      <div class="info-row" *ngIf="resultado.taller_asignado">
+        <span class="label">Taller asignado:</span>
+        <span class="value">{{resultado.taller_asignado.nombre}}</span>
+      </div>
+      <div class="info-row" *ngIf="resultado.taller_asignado">
+        <span class="label">Distancia:</span>
+        <span class="value">{{resultado.taller_asignado.distancia_km}} km</span>
+      </div>
+    </div>
+
+    <button class="btn-ver" (click)="irAEmergencias()">📋 Ver mis emergencias</button>
+  </div>
+</div>

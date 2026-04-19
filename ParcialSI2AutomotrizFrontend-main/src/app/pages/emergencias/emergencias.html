@@ -1,0 +1,162 @@
+<div class="emergencias-container">
+  <div class="header">
+    <div>
+      <h1>📋 Emergencias</h1>
+      <p class="subtitle" *ngIf="rol === 'conductor'">Historial de tus solicitudes de auxilio</p>
+      <p class="subtitle" *ngIf="rol === 'administrador_taller'">Emergencias asignadas a tu taller</p>
+      <p class="subtitle" *ngIf="rol === 'tecnico'">Emergencias asignadas a ti</p>
+    </div>
+  </div>
+
+  <!-- Filtro -->
+  <div class="filtro-bar">
+    <select [(ngModel)]="filtroEstado" (change)="filtrar()" class="select-filtro">
+      <option value="">Todos los estados</option>
+      <option value="Reportado">Reportado</option>
+      <option value="Asignado">Asignado</option>
+      <option value="En camino">En camino</option>
+      <option value="En sitio">En sitio</option>
+      <option value="En reparación">En reparación</option>
+      <option value="Finalizado">Finalizado</option>
+      <option value="Cancelado">Cancelado</option>
+    </select>
+    <span class="badge-count">{{emergencias.length}} emergencias</span>
+  </div>
+
+  <div class="alert" *ngIf="mensaje" [class.error]="isError" [class.success]="!isError">
+    {{mensaje}}
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && emergencias.length === 0">
+    <div class="empty-icon">📋</div>
+    <p>No hay emergencias</p>
+  </div>
+
+  <!-- Lista de emergencias -->
+  <div class="emergencias-list" *ngIf="!loading && emergencias.length > 0">
+    <div class="emergencia-card" *ngFor="let e of emergencias">
+      <div class="card-header">
+        <span class="card-id">#{{e.id}}</span>
+        <span class="estado-badge" [class]="getEstadoClass(e.estadoactual)">{{e.estadoactual}}</span>
+      </div>
+
+      <div class="card-body">
+        <div class="card-info">
+          <div class="info-item">
+            <span class="icon">🚗</span>
+            <span>{{e.vehiculo_placa}}</span>
+          </div>
+          <div class="info-item" *ngIf="e.taller_nombre">
+            <span class="icon">🏪</span>
+            <span>{{e.taller_nombre}}</span>
+          </div>
+          <div class="info-item" *ngIf="e.tecnico_nombre">
+            <span class="icon">👷</span>
+            <span>{{e.tecnico_nombre}}</span>
+          </div>
+          <div class="info-item">
+            <span class="icon">🕐</span>
+            <span>{{e.fechahora | date:'dd/MM/yyyy HH:mm'}}</span>
+          </div>
+        </div>
+
+        <p class="descripcion" *ngIf="e.descripcion">{{e.descripcion}}</p>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-sm btn-detail" (click)="verDetalle(e.id)">👁 Ver detalle</button>
+
+        <!-- Admin Taller: Aceptar/Rechazar -->
+        <ng-container *ngIf="rol === 'administrador_taller' && e.estadoactual === 'Asignado'">
+          <button class="btn-sm btn-accept" (click)="abrirAceptar(e.id)">✅ Aceptar</button>
+          <button class="btn-sm btn-reject" (click)="rechazar(e.id)">❌ Rechazar</button>
+        </ng-container>
+
+        <!-- Técnico: Avanzar estado -->
+        <button *ngIf="rol === 'tecnico' && puedeAvanzar(e.estadoactual)"
+                class="btn-sm btn-advance" (click)="avanzarEstado(e.id, e.estadoactual)">
+          {{getSiguienteEstadoLabel(e.estadoactual)}}
+        </button>
+
+        <!-- Conductor: Cancelar -->
+        <button *ngIf="rol === 'conductor' && puedeCancelar(e.estadoactual)"
+                class="btn-sm btn-cancel" (click)="cancelar(e.id)">
+          ❌ Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle -->
+<div class="modal-overlay" *ngIf="detalleVisible" (click)="cerrarDetalle()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Emergencia #{{detalleData?.id}}</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="detalleData">
+      <div class="detail-grid">
+        <div class="detail-item"><span class="d-label">Estado</span> <span class="estado-badge" [class]="getEstadoClass(detalleData.estadoactual)">{{detalleData.estadoactual}}</span></div>
+        <div class="detail-item"><span class="d-label">Vehículo</span> <span>{{detalleData.marca}} {{detalleData.modelo}} ({{detalleData.vehiculo_placa}})</span></div>
+        <div class="detail-item" *ngIf="detalleData.taller_nombre"><span class="d-label">Taller</span> <span>{{detalleData.taller_nombre}}</span></div>
+        <div class="detail-item" *ngIf="detalleData.tecnico_nombre"><span class="d-label">Técnico</span> <span>{{detalleData.tecnico_nombre}}</span></div>
+        <div class="detail-item"><span class="d-label">Ubicación</span> <span>{{detalleData.latitud}}, {{detalleData.longitud}}</span></div>
+        <div class="detail-item" *ngIf="detalleData.descripcion"><span class="d-label">Descripción</span> <span>{{detalleData.descripcion}}</span></div>
+      </div>
+
+      <h3 class="timeline-title">📜 Historial de estados</h3>
+      <div class="timeline">
+        <div class="timeline-item" *ngFor="let h of historial">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <span class="t-estados">{{h.estado_anterior}} → {{h.estado_nuevo}}</span>
+            <span class="t-fecha">{{h.fecha_cambio | date:'dd/MM/yyyy HH:mm:ss'}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Aceptar -->
+<div class="modal-overlay" *ngIf="showAceptarModal" (click)="showAceptarModal = false">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Aceptar Emergencia</h2>
+      <button class="btn-close" (click)="showAceptarModal = false">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Selecciona un técnico disponible para enviar:</p>
+
+      <div class="tech-list" *ngIf="tecnicos.length > 0">
+        <label class="tech-option" *ngFor="let t of tecnicos"
+               [class.selected]="selectedTecnicoId === t.id"
+               (click)="selectedTecnicoId = t.id">
+          <div class="tech-radio" [class.active]="selectedTecnicoId === t.id"></div>
+          <div>
+            <div class="tech-name">{{t.nombrecompleto}}</div>
+            <div class="tech-email">{{t.correo}}</div>
+          </div>
+        </label>
+      </div>
+
+      <div *ngIf="tecnicos.length === 0" class="no-tech">
+        No hay técnicos disponibles en este momento
+      </div>
+
+      <div class="alert error" *ngIf="mensaje && isError">{{mensaje}}</div>
+
+      <button class="btn-confirm" (click)="confirmarAceptar()"
+              [disabled]="!selectedTecnicoId">
+        ✅ Confirmar y enviar técnico
+      </button>
+    </div>
+  </div>
+</div>

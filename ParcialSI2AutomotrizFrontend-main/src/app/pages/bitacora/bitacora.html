@@ -1,0 +1,67 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>📋 Bitácora del Sistema</h1>
+      <p>Registro de auditoría de todas las acciones</p>
+    </div>
+    <span class="total-badge">{{ total }} registros</span>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters glass-card">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label">Filtrar por tabla</label>
+        <input type="text" [(ngModel)]="filtroTabla" class="form-input" placeholder="ej: usuario, vehiculo, sesion..." id="bitacora-filter" />
+      </div>
+      <div class="filter-actions">
+        <button class="btn-primary" (click)="filtrar()" id="bitacora-search">🔍 Buscar</button>
+        <button class="btn-secondary" (click)="limpiarFiltro()">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading"><div class="spinner-lg"></div></div>
+  } @else if (registros.length === 0) {
+    <div class="empty-state">
+      <span class="icon">📋</span>
+      <h3>No hay registros en la bitácora</h3>
+      <p>Las acciones del sistema se registrarán aquí</p>
+    </div>
+  } @else {
+    <div class="table-container glass-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Acción</th>
+            <th>Tabla</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of registros; track r.id) {
+            <tr>
+              <td class="id-cell">{{ r.id }}</td>
+              <td>
+                <span class="user-badge">{{ r.usuario_correo || 'Sistema' }}</span>
+              </td>
+              <td>{{ r.accion }}</td>
+              <td><span class="table-badge">{{ r.tabla_afectada }}</span></td>
+              <td class="date-cell">{{ r.fecha }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination">
+      <button (click)="paginaAnterior()" [disabled]="pagina <= 1">← Anterior</button>
+      <span class="page-info">Página {{ pagina }} de {{ totalPaginas }}</span>
+      <button (click)="paginaSiguiente()" [disabled]="pagina >= totalPaginas">Siguiente →</button>
+    </div>
+  }
+</div>
